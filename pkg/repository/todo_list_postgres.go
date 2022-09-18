@@ -3,7 +3,6 @@ package repository
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	"github.com/sirupsen/logrus"
 	todo "github.com/zhavzharik/REST-API-in-Go"
 )
 
@@ -27,19 +26,16 @@ func (r *TodoListPostgres) Create(userId int, list todo.TodoList) (int, error) {
 	createListQuery := fmt.Sprintf("INSERT INTO %s (title, description) values ($1, $2) RETURNING id", todoListsTable)
 	row := tx.QueryRow(createListQuery, list.Title, list.Description)
 	if err = row.Scan(&id); err != nil {
-		logrus.Info("first rollback")
 		tx.Rollback()
 		return 0, err
 	}
 
 	createUsersListQuery := fmt.Sprintf("INSERT INTO %s (user_id, list_id) values ($1, $2)", usersListsTable)
-
-	_, err = tx.Exec(createUsersListQuery, userId, id) // не выполняется
-
+	_, err = tx.Exec(createUsersListQuery, userId, id)
 	if err != nil {
-		logrus.Info("second rollback")
 		tx.Rollback()
-		return 0, nil
+		return 0, err
 	}
-	return id, tx.Commit()
+	err = tx.Commit()
+	return id, err
 }
