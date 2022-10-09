@@ -97,7 +97,6 @@ func (h *Handler) updateList(c *gin.Context) {
 	c.JSON(http.StatusOK, StatusResponse{
 		Status: "Ok",
 	})
-
 }
 
 func (h *Handler) deleteList(c *gin.Context) {
